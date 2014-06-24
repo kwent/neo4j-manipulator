@@ -23,6 +23,11 @@
             <artifactId>neo4j-kernel</artifactId>
             <version>${neo4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
+            <version>3.6.2</version>
+        </dependency>
     </dependencies>
 
     <build>
