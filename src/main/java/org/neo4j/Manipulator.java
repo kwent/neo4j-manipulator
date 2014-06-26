@@ -8,10 +8,12 @@ import org.apache.lucene.search.WildcardQuery;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.graphdb.Transaction;
+import java.nio.charset.Charset;
 
 public class Manipulator{
 
     static GraphDatabaseService graphDb = null;
+    static String arg1;
     private static final RelationshipType LIVES_IN = DynamicRelationshipType.withName("lives_in");
 
     /**
@@ -23,6 +25,11 @@ public class Manipulator{
     public static void main(final String[] args) {
         
         graphDb = buildGraphDb(args[0]);
+        arg1 = args[1];
+        
+        for (String s: args) {
+            System.out.println(s);
+        }
         manipulator();
         
     }
@@ -32,8 +39,33 @@ public class Manipulator{
      */
      
     private static void manipulator() {
-        fix_orientation_lives_in();
-        // cleanup_users_nodes();
+        //fix_orientation_lives_in();
+        //cleanup_users_nodes();
+        try
+        {
+            byte[] bytes = arg1.getBytes("UTF-8");
+            search(new String(bytes, "UTF-8"));
+        }
+        catch (java.io.UnsupportedEncodingException e) {}
+
+    }
+    
+    private static void search(String pattern) {
+        
+        // Example for Céline carron
+        // java -cp "target/neo4j-manipulator-1.0-SNAPSHOT-jar-with-dependencies.jar:*" org.neo4j.Manipulator ../down-neo4j/neo4j/data/graph.db Cé\*
+        
+        Index<Node> index = graphDb.index().forNodes("search_idx");
+        IndexHits<Node> index_hits = index.query( new WildcardQuery( new Term( "name", pattern ) ) );
+        System.out.println( "SEARCH RESULTS FOUND : " + index_hits.size());
+        
+        while (index_hits.hasNext())
+        {
+            Node node = index_hits.next(); 
+            System.out.println("ID :" + node.getId());
+            System.out.println("NAME :" + node.getProperty("name").toString());
+        }
+        
     }
     
     // SOME LIVES_IN RELATIONSHIP ARE THE WRONG WAY NODE2 - NODE1
